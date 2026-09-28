@@ -1,6 +1,6 @@
 ---
 name: project-docs-scaffold
-description: 为项目初始化文档治理体系：搭建按类型分目录的 docs 骨架、写入 AGENTS.md 文档规范、生成六类文档模板与校验脚本，并完成 git init 与 pre-commit 校验钩子，最后跑校验到全 PASS。Use when 用户说"给这个项目初始化文档规范"、"搭 docs 骨架"、"文档太乱帮我规范"、"新建项目要文档体系"，或需要为 AI 协作项目建立可校验、可沉淀的项目文档结构（PRD / DESIGN / ADR / PROGRESS / RETRO / 知识笔记）。
+description: 为项目初始化文档治理体系：搭建按类型分目录的 docs 骨架、写入 AGENTS.md 文档规范、生成五类核心文档模板与知识笔记模板以及校验脚本，并完成 git init 与 pre-commit 校验钩子，最后跑校验到全 PASS。Use when 用户说"给这个项目初始化文档规范"、"搭 docs 骨架"、"文档太乱帮我规范"、"新建项目要文档体系"，或需要为 AI 协作项目建立可校验、可沉淀的项目文档结构（PRD / DESIGN / ADR / PROGRESS / RETRO / 知识笔记）。
 license: MIT
 compatibility: 需要 Python 3.8+ 与 git；单文件校验脚本无第三方依赖，在 Windows / macOS / Linux 均可运行。
 metadata:
@@ -19,8 +19,9 @@ Use when 用户说"给这个项目初始化文档规范 / 搭 docs 骨架 / 文�
 
 ```
 assets/
-├── templates/     # docs-guide.md / AGENTS.md / README.md / 六类模板 / tech-index.md / gitignore / docs/README.md / prompts/
-└── scripts/       # validate_docs.py（校验闸门）
+├── templates/     # docs-guide.md / AGENTS.md / README.md / 五类+知识笔记模板 / tech-index.md / gitignore / docs/README.md / prompts/
+├── scripts/       # validate_docs.py（校验闸门）
+└── CHANGELOG.md   # 校验器契约的规则变更记录
 ```
 
 ## 核心模型（四句话）
@@ -99,7 +100,7 @@ assets/
 - 示例行：地图/台账第一列以 `~` 开头的行是示例，正反向校验都跳过；改写成真实文档时去掉 `~`
 - 输出：PASS/FAIL 汇总 + 每文件问题行；`--quiet` 只回退出码；`--version` 打印契约版本
 
-契约版本在脚本内 `__version__`。校验器以「复制文件到项目」方式分发，用户无法自动感知规则变化，只能靠 `--version` 自查；规则变更记录在仓库的 CHANGELOG.md。
+契约版本在脚本内 `__version__`。校验器以「复制文件到项目」方式分发，用户无法自动感知规则变化，只能靠 `--version` 自查；规则变更记录见 `assets/CHANGELOG.md`。
 
 ## 其他 AI 编码工具
 

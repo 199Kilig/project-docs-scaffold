@@ -181,6 +181,7 @@ project-docs-scaffold/
 │       └── assets/                     #   技能运行所需的全部资产
 │           ├── templates/              #     与根 templates/ 同步
 │           ├── scripts/validate_docs.py#     与根 scripts/ 同步
+│           ├── CHANGELOG.md            #     与根 CHANGELOG.md 同步
 │           └── LICENSE
 ├── PROPOSAL.md               # 设计文档：三层记录模型的推导过程
 ├── CHANGELOG.md              # 校验器契约的规则变更记录
@@ -200,7 +201,7 @@ project-docs-scaffold/
     └── prompts/              # 写作 / 投喂 / 转写 / 蒸馏指令
 ```
 
-> `skills/…/assets/` 与根目录的 `templates/`、`scripts/validate_docs.py` 内容相同：前者保证技能自包含（Agent Skills 规范要求安装后不依赖仓库其他部分），后者是手动复制路径的来源。改任意一处后跑 `python scripts/sync_skill_assets.py` 保持一致，`--check` 可接入 CI。
+> `skills/…/assets/` 与根目录的 `templates/`、`scripts/validate_docs.py`、`CHANGELOG.md` 内容相同：前者保证技能自包含（Agent Skills 规范要求安装后不依赖仓库其他部分），后者是手动复制路径的来源。改任意一处后跑 `python scripts/sync_skill_assets.py` 保持一致——它同时检查 `SKILL.md` 的 `metadata.version` 是否与 CHANGELOG 最新版本一致，`--check` 可接入 CI。
 
 ---
 
