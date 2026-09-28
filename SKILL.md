@@ -46,11 +46,11 @@ Use when 用户说"给这个项目初始化文档规范 / 搭 docs 骨架 / 文�
    - 首次提交：**只 add 骨架路径**（AGENTS.md README.md docs/ scripts/ .gitignore），**严禁 `git add -A` / `git add .`**（防 .env 等敏感文件入库）；提交信息 `docs: 初始化文档体系脚手架`。pre-commit 钩子会在提交时自动跑校验，FAIL 则提交被拦
    - 安全降级：git 未配置 user.name/email → 只 init 不 commit，提示用户配置后自行提交；git 不可用/命令失败 → 跳过整步，**不影响文档生成**
 7. **验证**：跑 `python scripts/validate_docs.py`，必须全 PASS；有 FAIL 就地修复后重跑。
-8. **汇报**：初始化报告（建了什么/校验 PASS/git 状态/文档地图入口）+ 一句话纪律清单（见下）。**同时提醒用户：删除 docs/README.md 地图与 docs/06-知识/README.md 台账里的示例行**（示例文档并不存在，留着会误导）。
+8. **汇报**：初始化报告（建了什么/校验 PASS/git 状态/文档地图入口）+ 一句话纪律清单（见下）。地图与台账里的示例行带 `~` 前缀，**不参与校验、可以保留**；用户写真实文档时照示例加行并去掉 `~`（去掉后校验器会要求该文件真实存在）。
 
 ## 生成后必须告诉用户的纪律清单
 
-- 新建文档：先读 `docs/_templates/` 对应模板，严格按章节填；一份文档只能是一个类型，跨界就拆；文件名用 `类型-<中文语义短语>.md`（如 `PRD-打卡功能.md`），写完在 `docs/README.md` 地图登记一行。
+- 新建文档：先读 `docs/_templates/` 对应模板，严格按章节填；一份文档只能是一个类型，跨界就拆；文件名用 `类型-<中文语义短语>.md`（如 `PRD-打卡功能.md`），写完在 `docs/README.md` 地图登记一行（照示例格式，**去掉行首 `~`**——去掉后校验器会要求该文件真实存在）。
 - 给 AI 喂文档：固定指令"只提取元信息头块 + MUST 区块，忽略 HUMAN 区块"，或让 AI 先做 20 行投影转写。
 - agent 的临时快照/草稿：只放 `docs/_inbox/`，禁止写进正式文档；阶段结束用 distill 指令蒸馏成类型文档后清空。
 - 新技术沉淀：阶段结束蒸馏时，用判别问题"本轮有没有用到此前不了解的技术"把关；有则写 `TECH-<技术>-<语义>.md` 笔记并在 `docs/06-知识/README.md` 台账登记一行（面试前只扫这张表）。
@@ -71,7 +71,8 @@ Use when 用户说"给这个项目初始化文档规范 / 搭 docs 骨架 / 文�
 | docs/_templates/RETRO-模板.md | templates/RETRO-template.md |
 | docs/_templates/TECH-模板.md | templates/TECH-template.md（知识笔记：我学会了什么，服务复盘/面试） |
 | docs/06-知识/README.md（tech-index 台账） | templates/tech-index.md（面试快查表，强制登记） |
-| scripts/validate_docs.py | scripts/validate_docs.py |
+| scripts/validate_docs.py | scripts/validate_docs.py（契约版本见文件内 `__version__` 与 CHANGELOG.md） |
+| .gitattributes | 仓库根 `.gitattributes`（*.py 强制 LF，保证跨平台 shebang 可用） |
 | .gitignore | templates/gitignore（完整版：.env/生成物/Python/Node/IDE） |
 | docs/_templates/prompts/（写作/投喂/转写/蒸馏指令） | templates/prompts/ |
 | docs/_inbox/（过程产物暂存区，gitignore） | 空目录，git 不跟踪 |
@@ -84,9 +85,12 @@ Use when 用户说"给这个项目初始化文档规范 / 搭 docs 骨架 / 文�
 - ADR 编号：递增且不重复
 - 必填章节：每类型模板的固定章节标题必须存在（用 frontmatter type 对应检查）
 - 内部链接：`](./xxx` 相对链接目标存在
-- 文档地图登记：每份正式文档必须在 docs/README.md 地图有一行（未登记 = FAIL）
+- 文档地图登记：每份正式文档必须在 docs/README.md 地图有一行（未登记 = FAIL）；反向亦然——地图登记的文档不存在 = FAIL（幽灵条目）
 - tech-index 登记：每份 TECH 笔记必须在 docs/06-知识/README.md 台账有一行（未登记 = FAIL）
-- 输出：PASS/FAIL 汇总 + 每文件问题行
+- 示例行：地图/台账第一列以 `~` 开头的行是示例，正反向校验都跳过；改写成真实文档时去掉 `~`
+- 输出：PASS/FAIL 汇总 + 每文件问题行；`--quiet` 只回退出码；`--version` 打印契约版本（规则变更见 CHANGELOG.md）
+
+契约版本: 脚本内 `__version__`。规则每次变更必须同步更新该版本号与 `CHANGELOG.md`——校验器以「复制文件」方式分发，用户无法自动感知规则变化，只能靠版本号自查。
 
 ## Pitfalls
 
@@ -98,6 +102,8 @@ Use when 用户说"给这个项目初始化文档规范 / 搭 docs 骨架 / 文�
 ## Verification
 
 - `python scripts/validate_docs.py` 全 PASS
+- `python scripts/validate_docs.py --version` 能打印契约版本（用户据此自查规则是否落后）
+- 地图/台账的示例行带 `~` 前缀，且初装后校验 PASS（不因示例行报 FAIL）
 - docs/ 五类目录存在且非空（至少含模板）；06-知识/ 存在且含 tech-index 台账
 - docs/_inbox/ 存在且被 gitignore
 - AGENTS.md 含"文档地图"节和"铁律"节（铁律含语义段命名/地图登记/inbox）

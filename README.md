@@ -21,7 +21,7 @@ Vibe coding 模式下，AI 生成文档速度快但缺乏约束，常见的失�
 | **一文档一类型**（Diátaxis 分类学） | 文档类型闭集：PRD / DESIGN / ADR / PROGRESS / RETRO + TECH 知识笔记。目录即类型、文件名即"类型 + 中文语义短语"，禁止跨界混写 |
 | **三层记录模型** | 过程层（`docs/_inbox/`，临时产物，不进 git）→ 项目层（`docs/01~05`，项目发生了什么）→ 知识层（`docs/06-知识/`，我学会了什么，服务复盘与面试） |
 | **双读者投影** | 同一份源：人类读者读完整叙事（HUMAN 区块），AI 读者读高熵事实（MUST 区块）+ 文档指针（AGENTS.md）。禁止维护两份内容 |
-| **机器校验闸门** | `validate_docs.py` 检查：frontmatter / 命名规则 / 必填章节 / 内部链接 / 文档地图登记 / 知识台账登记。可接入 pre-commit 钩子，违规提交被自动拦截 |
+| **机器校验闸门** | `validate_docs.py` 检查：frontmatter / 命名规则 / 必填章节 / 内部链接 / 文档地图登记（双向）/ 知识台账登记。可接入 pre-commit 钩子，违规提交被自动拦截。校验器带**契约版本号**（`--version` 自查），规则变更记录在 `CHANGELOG.md` |
 | **知识蒸馏** | 阶段结束用 `prompts/distill.md` 把过程素材蒸馏成正式文档与 TECH 笔记，判别问题把关（"本轮是否用到此前不了解的技术"），防止笔记泛滥 |
 | **Git 集成** | 自动 `git init`、`.gitignore`（含 .env 安全红线）、pre-commit 钩子、安全首次提交（仅暂存骨架文件） |
 
@@ -54,14 +54,18 @@ hermes skills install 199Kilig/project-docs-scaffold
 2. **命名规则**：`类型-<中文语义短语>.md`（如 `PRD-打卡功能.md`、`ADR-004-文档用中文命名.md`）；语义段禁止纯数字/日期；
 3. **双读者约定**：MUST 区块（验收标准/接口/约束）为 AI 事实源；HUMAN 区块（背景/叙事）供人阅读，投喂 AI 时忽略；
 4. **过程产物隔离**：临时快照/草稿只进 `docs/_inbox/`（不进 git），阶段结束蒸馏后清空；
-5. **登记义务**：每份正式文档必须在 `docs/README.md` 文档地图登记一行；每份 TECH 笔记必须在 `docs/06-知识/README.md` 台账登记一行（未登记 = 校验 FAIL）。
+5. **登记义务**：每份正式文档必须在 `docs/README.md` 文档地图登记一行；每份 TECH 笔记必须在 `docs/06-知识/README.md` 台账登记一行（未登记 = 校验 FAIL）。**反向同样成立**：地图/台账里登记了、但文件不存在的行（幽灵条目）也是 FAIL——模板里的示例行带 `~` 前缀，不参与校验。
 
 ### 校验
 
 ```bash
 python scripts/validate_docs.py          # 全量校验，PASS/FAIL 输出
 python scripts/validate_docs.py docs     # 指定目录
+python scripts/validate_docs.py --quiet  # 只回退出码（pre-commit / CI 用）
+python scripts/validate_docs.py --version  # 打印校验器契约版本
 ```
+
+> **契约版本**：校验器以「复制文件到项目」的方式分发，规则变更不会被存量项目自动感知。规则每次变更都会更新脚本内的 `__version__` 并记录在 [CHANGELOG.md](CHANGELOG.md)——用 `--version` 对比即可知道自己落后了哪些规则。
 
 接入 Git pre-commit（零依赖，无需 pre-commit 框架）：
 
@@ -81,13 +85,15 @@ python scripts/validate_docs.py >/dev/null 2>&1 || { echo "文档校验失败，
 project-docs-scaffold/
 ├── SKILL.md                  # Hermes 技能封装（可选）
 ├── PROPOSAL.md               # 设计文档：三层记录模型的推导过程
+├── CHANGELOG.md              # 校验器契约的规则变更记录
+├── .gitattributes            # *.py 强制 LF（保证跨平台 shebang 可用）
 ├── scripts/
-│   └── validate_docs.py      # 校验闸门（7 项检查，可接 pre-commit）
+│   └── validate_docs.py      # 校验闸门（8 项检查，可接 pre-commit，带契约版本号）
 └── templates/                # 工具无关的核心资产
     ├── docs-guide.md         # 项目文档宪法（文档规范唯一来源）
     ├── AGENTS.md             # AI 代理目录（指针 + 铁律）
     ├── README.md             # 项目入口骨架
-    ├── docs/README.md        # 文档地图骨架（强制登记）
+    ├── docs/README.md        # 文档地图骨架（强制登记，双向校验）
     ├── PRD / DESIGN / ADR / PROGRESS / RETRO / TECH 模板
     ├── tech-index.md         # 知识台账骨架
     ├── gitignore             # 完整版（.env / 生成物 / _inbox）
