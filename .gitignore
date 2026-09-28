@@ -1,0 +1,27 @@
+# 本仓库自身的忽略规则
+#
+# 注意：给用户项目用的完整版在 templates/gitignore（含 .env 红线、docs/_inbox 等），
+# 那才是脚手架产品的一部分。这里是维护本仓库时的忽略项。
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 环境变量与密钥
+.env
+.env.*
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 临时与产物
+*.log
+tmp/
+dist/
+build/

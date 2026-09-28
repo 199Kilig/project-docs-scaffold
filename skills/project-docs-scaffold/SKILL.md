@@ -1,19 +1,27 @@
 ---
 name: project-docs-scaffold
-description: Use when 初始化项目文档体系/搭 docs 骨架。生成 AGENTS.md+文档模板（核心五类+知识笔记）+校验脚本。
-version: 1.1.0
-author: Hermes Agent
+description: 为项目初始化文档治理体系：搭建按类型分目录的 docs 骨架、写入 AGENTS.md 文档规范、生成六类文档模板与校验脚本，并完成 git init 与 pre-commit 校验钩子，最后跑校验到全 PASS。Use when 用户说"给这个项目初始化文档规范"、"搭 docs 骨架"、"文档太乱帮我规范"、"新建项目要文档体系"，或需要为 AI 协作项目建立可校验、可沉淀的项目文档结构（PRD / DESIGN / ADR / PROGRESS / RETRO / 知识笔记）。
 license: MIT
-platforms: [linux, macos, windows]
+compatibility: 需要 Python 3.8+ 与 git；单文件校验脚本无第三方依赖，在 Windows / macOS / Linux 均可运行。
 metadata:
-  hermes:
-    tags: [docs, documentation, scaffolding, diataxis, agents-md, docs-as-code]
-    related_skills: [speckit-constitution, web-research]
+  author: 199Kilig
+  version: "1.2.0"
+  repository: https://github.com/199Kilig/project-docs-scaffold
 ---
 
 # 项目文档体系脚手架（project-docs-scaffold）
 
 Use when 用户说"给这个项目初始化文档规范 / 搭 docs 骨架 / 文档太乱帮我规范 / 新建项目要文档体系"。
+
+## 本技能的资源位置
+
+本文件所在目录是技能根目录，全部资产在 `assets/` 下。执行时按下表取文件，**不要联网下载**：
+
+```
+assets/
+├── templates/     # docs-guide.md / AGENTS.md / README.md / 六类模板 / tech-index.md / gitignore / docs/README.md / prompts/
+└── scripts/       # validate_docs.py（校验闸门）
+```
 
 ## 核心模型（四句话）
 
@@ -29,19 +37,19 @@ Use when 用户说"给这个项目初始化文档规范 / 搭 docs 骨架 / 文�
    ```
    docs/
    ├── README.md            ← 文档地图（强制登记，未登记 = 校验 FAIL）
-   ├── docs-guide.md        ← 文档宪法（从 templates/ 复制，可改）
+   ├── docs-guide.md        ← 文档宪法（从 assets/templates/ 复制，可改）
    ├── 01-需求/ 02-方案/ 03-决策/ 04-进度/ 05-复盘/
    ├── 06-知识/             ← 知识层：TECH 笔记 + tech-index 台账（面试/复盘快查）
    ├── _templates/  _generated/  _inbox/
    ```
    `_inbox/` 是过程产物暂存区（agent 快照/草稿），gitignore 掉、不进 git。
 3. **写根文件**：`AGENTS.md`（若已有则合并文档规范节，不覆盖其他内容）、README.md 骨架（若 README 已有内容则只在底部加文档地图链接节，不重写）、`.gitignore` 追加 `docs/_generated/` 与 `docs/_inbox/`。
-4. **写模板**：把 templates/ 下 6 个文档模板（五类 + TECH）+ prompts 说明（含 distill 蒸馏指令）复制到 `docs/_templates/`。
-5. **写校验脚本**：`scripts/validate_docs.py` 复制到项目（路径：项目根 `scripts/validate_docs.py`，或用户指定）。
+4. **写模板**：把 `assets/templates/` 下 6 个文档模板（五类 + TECH）+ prompts 说明（含 distill 蒸馏指令）复制到 `docs/_templates/`。
+5. **写校验脚本**：`assets/scripts/validate_docs.py` 复制到项目 `scripts/validate_docs.py`（或用户指定路径）。
 6. **git 初始化**（安全降级，细则见下）：
    - 检测：`git rev-parse --is-inside-work-tree` → 已有 git 上下文（本目录或父目录）则**跳过整步**并告知用户
    - 无仓库 → `git init`
-   - 写 `.gitignore`（若项目还没有）：用 templates/gitignore 完整版
+   - 写 `.gitignore`（若项目还没有）：用 `assets/templates/gitignore` 完整版
    - 写 `.git/hooks/pre-commit`（若还没有）：内容为"跑 `python scripts/validate_docs.py`，非 0 则阻止提交"——零依赖钩子，不装 pre-commit 框架
    - 首次提交：**只 add 骨架路径**（AGENTS.md README.md docs/ scripts/ .gitignore），**严禁 `git add -A` / `git add .`**（防 .env 等敏感文件入库）；提交信息 `docs: 初始化文档体系脚手架`。pre-commit 钩子会在提交时自动跑校验，FAIL 则提交被拦
    - 安全降级：git 未配置 user.name/email → 只 init 不 commit，提示用户配置后自行提交；git 不可用/命令失败 → 跳过整步，**不影响文档生成**
@@ -58,23 +66,24 @@ Use when 用户说"给这个项目初始化文档规范 / 搭 docs 骨架 / 文�
 
 ## 文件清单与来源
 
-| 目标文件 | 来源 |
+路径全部相对技能根目录（`assets/`）：
+
+| 目标文件（项目内） | 来源（技能内） |
 |---|---|
-| docs/docs-guide.md | templates/docs-guide.md（项目文档宪法，可裁剪） |
-| AGENTS.md | templates/AGENTS.md（合并进已有文件） |
-| README.md 骨架 | templates/README.md（已有 README 则只加链接节） |
-| docs/README.md | templates/docs/README.md（文档地图） |
-| docs/_templates/PRD-模板.md | templates/PRD-template.md |
-| docs/_templates/DESIGN-模板.md | templates/DESIGN-template.md |
-| docs/_templates/ADR-模板.md | templates/ADR-template.md |
-| docs/_templates/PROGRESS-模板.md | templates/PROGRESS-template.md |
-| docs/_templates/RETRO-模板.md | templates/RETRO-template.md |
-| docs/_templates/TECH-模板.md | templates/TECH-template.md（知识笔记：我学会了什么，服务复盘/面试） |
-| docs/06-知识/README.md（tech-index 台账） | templates/tech-index.md（面试快查表，强制登记） |
-| scripts/validate_docs.py | scripts/validate_docs.py（契约版本见文件内 `__version__` 与 CHANGELOG.md） |
-| .gitattributes | 仓库根 `.gitattributes`（*.py 强制 LF，保证跨平台 shebang 可用） |
-| .gitignore | templates/gitignore（完整版：.env/生成物/Python/Node/IDE） |
-| docs/_templates/prompts/（写作/投喂/转写/蒸馏指令） | templates/prompts/ |
+| docs/docs-guide.md | assets/templates/docs-guide.md（项目文档宪法，可裁剪） |
+| AGENTS.md | assets/templates/AGENTS.md（合并进已有文件） |
+| README.md 骨架 | assets/templates/README.md（已有 README 则只加链接节） |
+| docs/README.md | assets/templates/docs/README.md（文档地图） |
+| docs/_templates/PRD-模板.md | assets/templates/PRD-template.md |
+| docs/_templates/DESIGN-模板.md | assets/templates/DESIGN-template.md |
+| docs/_templates/ADR-模板.md | assets/templates/ADR-template.md |
+| docs/_templates/PROGRESS-模板.md | assets/templates/PROGRESS-template.md |
+| docs/_templates/RETRO-模板.md | assets/templates/RETRO-template.md |
+| docs/_templates/TECH-模板.md | assets/templates/TECH-template.md（知识笔记：我学会了什么，服务复盘/面试） |
+| docs/06-知识/README.md（tech-index 台账） | assets/templates/tech-index.md（面试快查表，强制登记） |
+| scripts/validate_docs.py | assets/scripts/validate_docs.py（契约版本见文件内 `__version__`） |
+| .gitignore | assets/templates/gitignore（完整版：.env/生成物/Python/Node/IDE） |
+| docs/_templates/prompts/（写作/投喂/转写/蒸馏指令） | assets/templates/prompts/ |
 | docs/_inbox/（过程产物暂存区，gitignore） | 空目录，git 不跟踪 |
 
 ## 校验脚本能力（validate_docs.py）
@@ -88,9 +97,17 @@ Use when 用户说"给这个项目初始化文档规范 / 搭 docs 骨架 / 文�
 - 文档地图登记：每份正式文档必须在 docs/README.md 地图有一行（未登记 = FAIL）；反向亦然——地图登记的文档不存在 = FAIL（幽灵条目）
 - tech-index 登记：每份 TECH 笔记必须在 docs/06-知识/README.md 台账有一行（未登记 = FAIL）
 - 示例行：地图/台账第一列以 `~` 开头的行是示例，正反向校验都跳过；改写成真实文档时去掉 `~`
-- 输出：PASS/FAIL 汇总 + 每文件问题行；`--quiet` 只回退出码；`--version` 打印契约版本（规则变更见 CHANGELOG.md）
+- 输出：PASS/FAIL 汇总 + 每文件问题行；`--quiet` 只回退出码；`--version` 打印契约版本
 
-契约版本: 脚本内 `__version__`。规则每次变更必须同步更新该版本号与 `CHANGELOG.md`——校验器以「复制文件」方式分发，用户无法自动感知规则变化，只能靠版本号自查。
+契约版本在脚本内 `__version__`。校验器以「复制文件到项目」方式分发，用户无法自动感知规则变化，只能靠 `--version` 自查；规则变更记录在仓库的 CHANGELOG.md。
+
+## 其他 AI 编码工具
+
+本技能遵循 Agent Skills 格式，`AGENTS.md` 的适配规则同样适用：
+
+- Claude Code：将生成的 `AGENTS.md` 一并复制为 `CLAUDE.md`（或让用户自行软链）。
+- Codex / Cursor / Copilot：原生读取 `AGENTS.md`，无需额外处理。
+- 任意工具：`scripts/validate_docs.py` 不依赖任何工具，可在提交前手动或钩子运行。
 
 ## Pitfalls
 

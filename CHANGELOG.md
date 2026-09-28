@@ -28,6 +28,26 @@ python scripts/validate_docs.py --version
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **技能改为 Agent Skills 标准结构**（校验规则未变，故不影响 validator 契约版本）
+  - `SKILL.md` 移入 `skills/project-docs-scaffold/`，`name` 与父目录名一致；仓库根不再放 `SKILL.md`
+  - frontmatter 收敛为规范字段：必需的 `name` / `description`，可选 `license` / `compatibility` / `metadata`（扁平字符串映射）
+  - 移除 Hermes 专有字段 `version` / `author` / `platforms` / `metadata.hermes`（`author` 改为仓库所有者）
+  - `description` 改写为"能力 + 触发场景"完整句式，提高各客户端的技能召回准确度
+  - 技能目录自包含：模板与校验脚本以 `assets/` 副本随技能分发
+  - 新增 `scripts/sync_skill_assets.py`：同步/校验 `assets/` 与根 `templates/`、`scripts/` 一致（`--check` 供 CI）
+  - 决策记录见 `docs/03-决策/ADR-001-技能采用AgentSkills标准结构.md`
+  - **升级动作**：已安装旧版技能（根目录 `SKILL.md`）的副本需替换为新技能目录
+
+### 未变更
+
+- 校验器的 8 项检查逻辑与契约版本 `1.0.0` 均未变动；本次改造只涉及技能封装形态。
+
+---
+
 ## [1.0.0] — 2026-09-01
 
 契约首次显式版本化。此前 `validate_docs.py` 的规则集视为 `0.9.0`（未版本化，无变更记录）。
